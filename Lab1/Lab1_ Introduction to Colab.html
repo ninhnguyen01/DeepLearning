@@ -1,0 +1,1881 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+
+  <div class="border-box-sizing">
+    <div class="container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Lab 1: Introduction to Colab<a rel="noopener" class="anchor-link" href="#Lab-1:-Introduction-to-Colab">&#182;</a></h1><hr/>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Part 1: Google Colab<a rel="noopener" class="anchor-link" href="#Part-1:-Google-Colab">&#182;</a></h1><p>Google Colab is an executable document that allows you to write and execute Python in your browser. Colab connects your notebook to a cloud based runtime provided by Google.<br/>
+<br/></p>
+<ul>
+<li>Notebook documents stored in Google Drive</li>
+<li>A notebook document is a list of cells</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>1. Cells<a rel="noopener" class="anchor-link" href="#1.-Cells">&#182;</a></h2><p>Colab has two types of cells: text and code. Click a cell to select it.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>1.1 Text cells<a rel="noopener" class="anchor-link" href="#1.1-Text-cells">&#182;</a></h3><p>Text cells are formatted using a simple markup language called Markdown. Double-click to edit a text cell.<br/>
+<br/>
+Headings are rendered as titles.<br/></p>
+<ul>
+<li>&quot;# Section 1&quot;</li>
+<li>&quot;# Section 2&quot;</li>
+<li>&quot;## Sub-section under Section 2&quot;</li>
+<li>&quot;### Sub-section under the sub-section under Section 2&quot;
+<br/>
+<br/></li>
+</ul>
+<p>The <strong>table of contents</strong>, available on the left side of Colab, can be used to navigate through the document.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>1.2 Code cells<a rel="noopener" class="anchor-link" href="#1.2-Code-cells">&#182;</a></h3><p>Below is a code cell. You can click in the cell to select it and execute the Python codes in the following ways:</p>
+<ul>
+<li>Click the <strong>Play icon</strong> in the left gutter of the cell;</li>
+<li>Type <strong>Cmd/Ctrl+Enter</strong> to run the cell in place;</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;IS695 lab1&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>IS695 lab1
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>1.3 Adding, moving, and deleting cells<a rel="noopener" class="anchor-link" href="#1.3-Adding,-moving,-and-deleting-cells">&#182;</a></h3><p>You can add new cells by using the <strong>+ CODE</strong> and <strong>+ TEXT</strong> buttons that show when you hover between cells. These buttons are also in the toolbar above the notebook where they can be used to add a cell below the currently selected cell.</p>
+<p>You can move a cell by selecting it and clicking <strong>Cell Up</strong> or <strong>Cell Down</strong> in the toolbar.</p>
+<p>You can delete a cell by selecting it and clicking on the <strong>Delete cell</strong> button on the top-right corner of the cell.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>2. Save your notebook document<a rel="noopener" class="anchor-link" href="#2.-Save-your-notebook-document">&#182;</a></h2><ul>
+<li>File -&gt; Save</li>
+<li>Type <strong>Cmd/Ctrl+S</strong></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>3. Download your notebook document<a rel="noopener" class="anchor-link" href="#3.-Download-your-notebook-document">&#182;</a></h2><ul>
+<li>File -&gt; Download -&gt; Download .ipynb</li>
+<li>Download the file from Google Drive</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Part 2: Basic operators and data structures in Python<a rel="noopener" class="anchor-link" href="#Part-2:-Basic-operators-and-data-structures-in-Python">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Mounting Google Drive</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Mounted at /content/drive
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Read data (with assignment operator)</span>
+<span class="n">pokemon</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;/content/drive/MyDrive/DL_data/pokemon.csv&#39;</span><span class="p">)</span>
+<span class="c1"># pokemon is a dataframe</span>
+<span class="n">pokemon</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>#</th>
+      <th>Name</th>
+      <th>Type 1</th>
+      <th>Type 2</th>
+      <th>HP</th>
+      <th>Attack</th>
+      <th>Defense</th>
+      <th>Sp. Atk</th>
+      <th>Sp. Def</th>
+      <th>Speed</th>
+      <th>Generation</th>
+      <th>Legendary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>Bulbasaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>45</td>
+      <td>49</td>
+      <td>49</td>
+      <td>65</td>
+      <td>65</td>
+      <td>45</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>Ivysaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>60</td>
+      <td>62</td>
+      <td>63</td>
+      <td>80</td>
+      <td>80</td>
+      <td>60</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>Venusaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>80</td>
+      <td>82</td>
+      <td>83</td>
+      <td>100</td>
+      <td>100</td>
+      <td>80</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>Mega Venusaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>80</td>
+      <td>100</td>
+      <td>123</td>
+      <td>122</td>
+      <td>120</td>
+      <td>80</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>Charmander</td>
+      <td>Fire</td>
+      <td>NaN</td>
+      <td>39</td>
+      <td>52</td>
+      <td>43</td>
+      <td>60</td>
+      <td>50</td>
+      <td>65</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>795</th>
+      <td>796</td>
+      <td>Diancie</td>
+      <td>Rock</td>
+      <td>Fairy</td>
+      <td>50</td>
+      <td>100</td>
+      <td>150</td>
+      <td>100</td>
+      <td>150</td>
+      <td>50</td>
+      <td>6</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>796</th>
+      <td>797</td>
+      <td>Mega Diancie</td>
+      <td>Rock</td>
+      <td>Fairy</td>
+      <td>50</td>
+      <td>160</td>
+      <td>110</td>
+      <td>160</td>
+      <td>110</td>
+      <td>110</td>
+      <td>6</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>797</th>
+      <td>798</td>
+      <td>Hoopa Confined</td>
+      <td>Psychic</td>
+      <td>Ghost</td>
+      <td>80</td>
+      <td>110</td>
+      <td>60</td>
+      <td>150</td>
+      <td>130</td>
+      <td>70</td>
+      <td>6</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>798</th>
+      <td>799</td>
+      <td>Hoopa Unbound</td>
+      <td>Psychic</td>
+      <td>Dark</td>
+      <td>80</td>
+      <td>160</td>
+      <td>60</td>
+      <td>170</td>
+      <td>130</td>
+      <td>80</td>
+      <td>6</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>799</th>
+      <td>800</td>
+      <td>Volcanion</td>
+      <td>Fire</td>
+      <td>Water</td>
+      <td>80</td>
+      <td>110</td>
+      <td>120</td>
+      <td>130</td>
+      <td>90</td>
+      <td>70</td>
+      <td>6</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+<p>800 rows &#215; 12 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the number of rows and cols</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(800, 12)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the head rows of a data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>#</th>
+      <th>Name</th>
+      <th>Type 1</th>
+      <th>Type 2</th>
+      <th>HP</th>
+      <th>Attack</th>
+      <th>Defense</th>
+      <th>Sp. Atk</th>
+      <th>Sp. Def</th>
+      <th>Speed</th>
+      <th>Generation</th>
+      <th>Legendary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>Bulbasaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>45</td>
+      <td>49</td>
+      <td>49</td>
+      <td>65</td>
+      <td>65</td>
+      <td>45</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>Ivysaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>60</td>
+      <td>62</td>
+      <td>63</td>
+      <td>80</td>
+      <td>80</td>
+      <td>60</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>Venusaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>80</td>
+      <td>82</td>
+      <td>83</td>
+      <td>100</td>
+      <td>100</td>
+      <td>80</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>Mega Venusaur</td>
+      <td>Grass</td>
+      <td>Poison</td>
+      <td>80</td>
+      <td>100</td>
+      <td>123</td>
+      <td>122</td>
+      <td>120</td>
+      <td>80</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>Charmander</td>
+      <td>Fire</td>
+      <td>NaN</td>
+      <td>39</td>
+      <td>52</td>
+      <td>43</td>
+      <td>60</td>
+      <td>50</td>
+      <td>65</td>
+      <td>1</td>
+      <td>False</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Obtain the Attack value for every pokemon</span>
+<span class="n">pokemon</span><span class="p">[[</span><span class="s1">&#39;Attack&#39;</span><span class="p">]]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Attack</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>49</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>62</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>82</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>100</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>52</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>795</th>
+      <td>100</td>
+    </tr>
+    <tr>
+      <th>796</th>
+      <td>160</td>
+    </tr>
+    <tr>
+      <th>797</th>
+      <td>110</td>
+    </tr>
+    <tr>
+      <th>798</th>
+      <td>160</td>
+    </tr>
+    <tr>
+      <th>799</th>
+      <td>110</td>
+    </tr>
+  </tbody>
+</table>
+<p>800 rows &#215; 1 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Obtain the Attack and Defense values for every pokemon</span>
+<span class="n">pokemon</span><span class="p">[[</span><span class="s1">&#39;Attack&#39;</span><span class="p">,</span><span class="s1">&#39;Defense&#39;</span><span class="p">]]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Attack</th>
+      <th>Defense</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>49</td>
+      <td>49</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>62</td>
+      <td>63</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>82</td>
+      <td>83</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>100</td>
+      <td>123</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>52</td>
+      <td>43</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>795</th>
+      <td>100</td>
+      <td>150</td>
+    </tr>
+    <tr>
+      <th>796</th>
+      <td>160</td>
+      <td>110</td>
+    </tr>
+    <tr>
+      <th>797</th>
+      <td>110</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>798</th>
+      <td>160</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <th>799</th>
+      <td>110</td>
+      <td>120</td>
+    </tr>
+  </tbody>
+</table>
+<p>800 rows &#215; 2 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the first row from data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>#                     1
+Name          Bulbasaur
+Type 1            Grass
+Type 2           Poison
+HP                   45
+Attack               49
+Defense              49
+Sp. Atk              65
+Sp. Def              65
+Speed                45
+Generation            1
+Legendary         False
+Name: 0, dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the last row from data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>#                   800
+Name          Volcanion
+Type 1             Fire
+Type 2            Water
+HP                   80
+Attack              110
+Defense             120
+Sp. Atk             130
+Sp. Def              90
+Speed                70
+Generation            6
+Legendary          True
+Name: 799, dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the third column from data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0        Grass
+1        Grass
+2        Grass
+3        Grass
+4         Fire
+        ...   
+795       Rock
+796       Rock
+797    Psychic
+798    Psychic
+799       Fire
+Name: Type 1, Length: 800, dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the last column from data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>0      False
+1      False
+2      False
+3      False
+4      False
+       ...  
+795     True
+796     True
+797     True
+798     True
+799     True
+Name: Legendary, Length: 800, dtype: bool</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the first three columns from the data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>#</th>
+      <th>Name</th>
+      <th>Type 1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>Bulbasaur</td>
+      <td>Grass</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>Ivysaur</td>
+      <td>Grass</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>Venusaur</td>
+      <td>Grass</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>Mega Venusaur</td>
+      <td>Grass</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>Charmander</td>
+      <td>Fire</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>795</th>
+      <td>796</td>
+      <td>Diancie</td>
+      <td>Rock</td>
+    </tr>
+    <tr>
+      <th>796</th>
+      <td>797</td>
+      <td>Mega Diancie</td>
+      <td>Rock</td>
+    </tr>
+    <tr>
+      <th>797</th>
+      <td>798</td>
+      <td>Hoopa Confined</td>
+      <td>Psychic</td>
+    </tr>
+    <tr>
+      <th>798</th>
+      <td>799</td>
+      <td>Hoopa Unbound</td>
+      <td>Psychic</td>
+    </tr>
+    <tr>
+      <th>799</th>
+      <td>800</td>
+      <td>Volcanion</td>
+      <td>Fire</td>
+    </tr>
+  </tbody>
+</table>
+<p>800 rows &#215; 3 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the value in the first row and fifth column of the data frame</span>
+<span class="n">pokemon</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>45</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Histogram of Attack</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Attack&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pokemon</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Plot a categorical variable: Legendary</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Legendary&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pokemon</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Data exploration<a rel="noopener" class="anchor-link" href="#Data-exploration">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the statistics of a numeric variable: Attack</span>
+<span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Attack&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>count    800.000000
+mean      79.001250
+std       32.457366
+min        5.000000
+25%       55.000000
+50%       75.000000
+75%      100.000000
+max      190.000000
+Name: Attack, dtype: float64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the statistics of a categorical variable: Type 1</span>
+<span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Type 1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>count       800
+unique       18
+top       Water
+freq        112
+Name: Type 1, dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the counts of unique pokemon types</span>
+<span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Type 1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Water       112
+Normal       98
+Grass        70
+Bug          69
+Psychic      57
+Fire         52
+Electric     44
+Rock         44
+Dragon       32
+Ground       32
+Ghost        32
+Dark         31
+Poison       28
+Steel        27
+Fighting     27
+Ice          24
+Fairy        17
+Flying        4
+Name: Type 1, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Obtain rows with one condition (find pokemon with attack value greater than 170)</span>
+<span class="n">pokemon</span><span class="p">[</span><span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Attack&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">170</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>#</th>
+      <th>Name</th>
+      <th>Type 1</th>
+      <th>Type 2</th>
+      <th>HP</th>
+      <th>Attack</th>
+      <th>Defense</th>
+      <th>Sp. Atk</th>
+      <th>Sp. Def</th>
+      <th>Speed</th>
+      <th>Generation</th>
+      <th>Legendary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>163</th>
+      <td>164</td>
+      <td>Mega Mewtwo X</td>
+      <td>Psychic</td>
+      <td>Fighting</td>
+      <td>106</td>
+      <td>190</td>
+      <td>100</td>
+      <td>154</td>
+      <td>100</td>
+      <td>130</td>
+      <td>1</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>232</th>
+      <td>233</td>
+      <td>Mega Heracross</td>
+      <td>Bug</td>
+      <td>Fighting</td>
+      <td>80</td>
+      <td>185</td>
+      <td>115</td>
+      <td>40</td>
+      <td>105</td>
+      <td>75</td>
+      <td>2</td>
+      <td>False</td>
+    </tr>
+    <tr>
+      <th>424</th>
+      <td>425</td>
+      <td>Primal Groudon</td>
+      <td>Ground</td>
+      <td>Fire</td>
+      <td>100</td>
+      <td>180</td>
+      <td>160</td>
+      <td>150</td>
+      <td>90</td>
+      <td>90</td>
+      <td>3</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>426</th>
+      <td>427</td>
+      <td>Mega Rayquaza</td>
+      <td>Dragon</td>
+      <td>Flying</td>
+      <td>105</td>
+      <td>180</td>
+      <td>100</td>
+      <td>180</td>
+      <td>100</td>
+      <td>115</td>
+      <td>3</td>
+      <td>True</td>
+    </tr>
+    <tr>
+      <th>429</th>
+      <td>430</td>
+      <td>DeoxysAttack Forme</td>
+      <td>Psychic</td>
+      <td>NaN</td>
+      <td>50</td>
+      <td>180</td>
+      <td>20</td>
+      <td>180</td>
+      <td>20</td>
+      <td>150</td>
+      <td>3</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Obtain rows with multiple conditions (find pokemon with attack greater than 170 and Defense greater than 150)</span>
+<span class="n">pokemon</span><span class="p">[(</span><span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Attack&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">170</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pokemon</span><span class="p">[</span><span class="s1">&#39;Defense&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">150</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>#</th>
+      <th>Name</th>
+      <th>Type 1</th>
+      <th>Type 2</th>
+      <th>HP</th>
+      <th>Attack</th>
+      <th>Defense</th>
+      <th>Sp. Atk</th>
+      <th>Sp. Def</th>
+      <th>Speed</th>
+      <th>Generation</th>
+      <th>Legendary</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>424</th>
+      <td>425</td>
+      <td>Primal Groudon</td>
+      <td>Ground</td>
+      <td>Fire</td>
+      <td>100</td>
+      <td>180</td>
+      <td>160</td>
+      <td>150</td>
+      <td>90</td>
+      <td>90</td>
+      <td>3</td>
+      <td>True</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Boxplot of a numeric variable: Attack</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Attack&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pokemon</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># scatter plot two numeric variables: Attack and Defense</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Attack&#39;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s1">&#39;Defense&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pokemon</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Generate correlation coefficients of two numeric variables in a 2x2 matrix: Attack and Defense</span>
+<span class="c1"># corr() lies between -1 and 1. zero means no correlation. 1 or -1 indicates full correlation</span>
+<span class="c1"># positive value means positive correlation and negative values mean negative relationships</span>
+<span class="n">pokemon</span><span class="p">[[</span><span class="s1">&#39;Attack&#39;</span><span class="p">,</span> <span class="s1">&#39;Defense&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[&#160;]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Attack</th>
+      <th>Defense</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Attack</th>
+      <td>1.000000</td>
+      <td>0.438687</td>
+    </tr>
+    <tr>
+      <th>Defense</th>
+      <td>0.438687</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine relationships between numeric and categorical variables: boxplot groups values of a numeric variable based on the values of a categorical variable.</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">&#39;Attack&#39;</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s1">&#39;Type 1&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">pokemon</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Generate a html file</span>
+<span class="err">!</span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">html</span> <span class="s2">&quot;/content/drive/MyDrive/DL_lab/Lab1_ Introduction to Colab.ipynb&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[NbConvertApp] Converting notebook /content/drive/MyDrive/DL_lab/Lab1_ Introduction to Colab.ipynb to html
+[NbConvertApp] Writing 414243 bytes to /content/drive/MyDrive/DL_lab/Lab1_ Introduction to Colab.html
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+
+ 
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.22.9-241/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.3,
+							'renderLatex': false
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.22.9-241/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>
