@@ -1,0 +1,3042 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+
+  <div class="border-box-sizing">
+    <div class="container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Lab 6: Business Applications with Tabular Data<a rel="noopener" class="anchor-link" href="#Lab-6:-Business-Applications-with-Tabular-Data">&#182;</a></h1><hr/>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Part 1: Classification<a rel="noopener" class="anchor-link" href="#Part-1:-Classification">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This data set contains information of cars purchased at the Auction.
+<br/>
+We will use this file to predict the quality of buying decisions and visualize decision processes.
+<br/>
+<br/>
+VARIABLE DESCRIPTIONS:<br/>
+Auction: Auction provider at which the  vehicle was purchased<br/>
+Color: Vehicle Color<br/>
+IsBadBuy: Identifies if the kicked vehicle was an avoidable purchase<br/>
+MMRCurrentAuctionAveragePrice: Acquisition price for this vehicle in average condition as of current day<br/>
+Size: The size category of the vehicle (Compact, SUV, etc.)<br/>
+TopThreeAmericanName:Identifies if the manufacturer is one of the top three American manufacturers<br/>
+VehBCost: Acquisition cost paid for the vehicle at time of purchase<br/>
+VehicleAge: The Years elapsed since the manufacturer&#39;s year<br/>
+VehOdo: The vehicles odometer reading<br/>
+WarrantyCost: Warranty price (term=36month  and millage=36K)<br/>
+WheelType: The vehicle wheel type description (Alloy, Covers)<br/>
+<br/>
+Target variable: <strong>IsBadBuy</strong></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>1. Upload and clean data<a rel="noopener" class="anchor-link" href="#1.-Upload-and-clean-data">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[40]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Mounting Google Drive</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(&quot;/content/drive&quot;, force_remount=True).
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[41]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">tree</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">plot_confusion_matrix</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">classification_report</span>
+
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[42]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Read data</span>
+<span class="n">carAuction</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/content/drive/MyDrive/DL_data/carAuction.csv&quot;</span><span class="p">)</span>
+<span class="n">carAuction</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[42]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Auction</th>
+      <th>Color</th>
+      <th>IsBadBuy</th>
+      <th>MMRCurrentAuctionAveragePrice</th>
+      <th>Size</th>
+      <th>TopThreeAmericanName</th>
+      <th>VehBCost</th>
+      <th>VehicleAge</th>
+      <th>VehOdo</th>
+      <th>WarrantyCost</th>
+      <th>WheelType</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ADESA</td>
+      <td>WHITE</td>
+      <td>No</td>
+      <td>2871</td>
+      <td>LARGE TRUCK</td>
+      <td>FORD</td>
+      <td>5300</td>
+      <td>8</td>
+      <td>75419</td>
+      <td>869</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>ADESA</td>
+      <td>GOLD</td>
+      <td>Yes</td>
+      <td>1840</td>
+      <td>VAN</td>
+      <td>FORD</td>
+      <td>3600</td>
+      <td>8</td>
+      <td>82944</td>
+      <td>2322</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>ADESA</td>
+      <td>RED</td>
+      <td>No</td>
+      <td>8931</td>
+      <td>SMALL SUV</td>
+      <td>CHRYSLER</td>
+      <td>7500</td>
+      <td>4</td>
+      <td>57338</td>
+      <td>588</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>ADESA</td>
+      <td>GOLD</td>
+      <td>No</td>
+      <td>8320</td>
+      <td>CROSSOVER</td>
+      <td>FORD</td>
+      <td>8500</td>
+      <td>5</td>
+      <td>55909</td>
+      <td>1169</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>ADESA</td>
+      <td>GREY</td>
+      <td>No</td>
+      <td>11520</td>
+      <td>LARGE TRUCK</td>
+      <td>FORD</td>
+      <td>10100</td>
+      <td>5</td>
+      <td>86702</td>
+      <td>853</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>9995</th>
+      <td>ADESA</td>
+      <td>RED</td>
+      <td>No</td>
+      <td>7536</td>
+      <td>SMALL SUV</td>
+      <td>CHRYSLER</td>
+      <td>6600</td>
+      <td>4</td>
+      <td>85377</td>
+      <td>983</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>9996</th>
+      <td>ADESA</td>
+      <td>BLACK</td>
+      <td>No</td>
+      <td>4921</td>
+      <td>LARGE TRUCK</td>
+      <td>GM</td>
+      <td>7000</td>
+      <td>7</td>
+      <td>89665</td>
+      <td>1543</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>9997</th>
+      <td>ADESA</td>
+      <td>BLACK</td>
+      <td>No</td>
+      <td>9263</td>
+      <td>MEDIUM SUV</td>
+      <td>CHRYSLER</td>
+      <td>9000</td>
+      <td>4</td>
+      <td>59383</td>
+      <td>1417</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>9998</th>
+      <td>ADESA</td>
+      <td>BLUE</td>
+      <td>No</td>
+      <td>3240</td>
+      <td>MEDIUM</td>
+      <td>OTHER</td>
+      <td>5500</td>
+      <td>4</td>
+      <td>48642</td>
+      <td>482</td>
+      <td>Covers</td>
+    </tr>
+    <tr>
+      <th>9999</th>
+      <td>ADESA</td>
+      <td>SILVER</td>
+      <td>No</td>
+      <td>6148</td>
+      <td>MEDIUM SUV</td>
+      <td>FORD</td>
+      <td>7000</td>
+      <td>5</td>
+      <td>82563</td>
+      <td>1243</td>
+      <td>Alloy</td>
+    </tr>
+  </tbody>
+</table>
+<p>10000 rows &#215; 11 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[43]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the head rows of a data frame</span>
+<span class="n">carAuction</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[43]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Auction</th>
+      <th>Color</th>
+      <th>IsBadBuy</th>
+      <th>MMRCurrentAuctionAveragePrice</th>
+      <th>Size</th>
+      <th>TopThreeAmericanName</th>
+      <th>VehBCost</th>
+      <th>VehicleAge</th>
+      <th>VehOdo</th>
+      <th>WarrantyCost</th>
+      <th>WheelType</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>ADESA</td>
+      <td>WHITE</td>
+      <td>No</td>
+      <td>2871</td>
+      <td>LARGE TRUCK</td>
+      <td>FORD</td>
+      <td>5300</td>
+      <td>8</td>
+      <td>75419</td>
+      <td>869</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>ADESA</td>
+      <td>GOLD</td>
+      <td>Yes</td>
+      <td>1840</td>
+      <td>VAN</td>
+      <td>FORD</td>
+      <td>3600</td>
+      <td>8</td>
+      <td>82944</td>
+      <td>2322</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>ADESA</td>
+      <td>RED</td>
+      <td>No</td>
+      <td>8931</td>
+      <td>SMALL SUV</td>
+      <td>CHRYSLER</td>
+      <td>7500</td>
+      <td>4</td>
+      <td>57338</td>
+      <td>588</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>ADESA</td>
+      <td>GOLD</td>
+      <td>No</td>
+      <td>8320</td>
+      <td>CROSSOVER</td>
+      <td>FORD</td>
+      <td>8500</td>
+      <td>5</td>
+      <td>55909</td>
+      <td>1169</td>
+      <td>Alloy</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>ADESA</td>
+      <td>GREY</td>
+      <td>No</td>
+      <td>11520</td>
+      <td>LARGE TRUCK</td>
+      <td>FORD</td>
+      <td>10100</td>
+      <td>5</td>
+      <td>86702</td>
+      <td>853</td>
+      <td>Alloy</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[44]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine variable type</span>
+<span class="n">carAuction</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[44]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Auction                          object
+Color                            object
+IsBadBuy                         object
+MMRCurrentAuctionAveragePrice     int64
+Size                             object
+TopThreeAmericanName             object
+VehBCost                          int64
+VehicleAge                        int64
+VehOdo                            int64
+WarrantyCost                      int64
+WheelType                        object
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[45]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Change categorical variables to &quot;category&quot;</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Auction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Auction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Color&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;IsBadBuy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;IsBadBuy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;Size&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;TopThreeAmericanName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;TopThreeAmericanName&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;WheelType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;WheelType&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[46]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine variable type</span>
+<span class="n">carAuction</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[46]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Auction                          category
+Color                            category
+IsBadBuy                         category
+MMRCurrentAuctionAveragePrice       int64
+Size                             category
+TopThreeAmericanName             category
+VehBCost                            int64
+VehicleAge                          int64
+VehOdo                              int64
+WarrantyCost                        int64
+WheelType                        category
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>2. Partition the data set for Decision Tree model<a rel="noopener" class="anchor-link" href="#2.-Partition-the-data-set-for-Decision-Tree-model">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[47]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create dummy variables</span>
+<span class="n">carAuction</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">carAuction</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Auction&#39;</span><span class="p">,</span><span class="s1">&#39;Color&#39;</span><span class="p">,</span><span class="s1">&#39;Size&#39;</span><span class="p">,</span><span class="s1">&#39;TopThreeAmericanName&#39;</span><span class="p">,</span><span class="s1">&#39;WheelType&#39;</span><span class="p">],</span><span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">carAuction</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[47]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>IsBadBuy</th>
+      <th>MMRCurrentAuctionAveragePrice</th>
+      <th>VehBCost</th>
+      <th>VehicleAge</th>
+      <th>VehOdo</th>
+      <th>WarrantyCost</th>
+      <th>Auction_MANHEIM</th>
+      <th>Auction_OTHER</th>
+      <th>Color_BLACK</th>
+      <th>Color_BLUE</th>
+      <th>...</th>
+      <th>Size_SMALL TRUCK</th>
+      <th>Size_SPECIALTY</th>
+      <th>Size_SPORTS</th>
+      <th>Size_VAN</th>
+      <th>TopThreeAmericanName_FORD</th>
+      <th>TopThreeAmericanName_GM</th>
+      <th>TopThreeAmericanName_OTHER</th>
+      <th>WheelType_Covers</th>
+      <th>WheelType_Special</th>
+      <th>WheelType_unkwnWheel</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>No</td>
+      <td>2871</td>
+      <td>5300</td>
+      <td>8</td>
+      <td>75419</td>
+      <td>869</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Yes</td>
+      <td>1840</td>
+      <td>3600</td>
+      <td>8</td>
+      <td>82944</td>
+      <td>2322</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>No</td>
+      <td>8931</td>
+      <td>7500</td>
+      <td>4</td>
+      <td>57338</td>
+      <td>588</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>No</td>
+      <td>8320</td>
+      <td>8500</td>
+      <td>5</td>
+      <td>55909</td>
+      <td>1169</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>No</td>
+      <td>11520</td>
+      <td>10100</td>
+      <td>5</td>
+      <td>86702</td>
+      <td>853</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>9995</th>
+      <td>No</td>
+      <td>7536</td>
+      <td>6600</td>
+      <td>4</td>
+      <td>85377</td>
+      <td>983</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9996</th>
+      <td>No</td>
+      <td>4921</td>
+      <td>7000</td>
+      <td>7</td>
+      <td>89665</td>
+      <td>1543</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9997</th>
+      <td>No</td>
+      <td>9263</td>
+      <td>9000</td>
+      <td>4</td>
+      <td>59383</td>
+      <td>1417</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9998</th>
+      <td>No</td>
+      <td>3240</td>
+      <td>5500</td>
+      <td>4</td>
+      <td>48642</td>
+      <td>482</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9999</th>
+      <td>No</td>
+      <td>6148</td>
+      <td>7000</td>
+      <td>5</td>
+      <td>82563</td>
+      <td>1243</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>10000 rows &#215; 40 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[48]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Apply standardization</span>
+<span class="n">numeric_variables</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[[</span><span class="s1">&#39;MMRCurrentAuctionAveragePrice&#39;</span><span class="p">,</span> <span class="s1">&#39;VehBCost&#39;</span><span class="p">,</span> <span class="s1">&#39;VehicleAge&#39;</span><span class="p">,</span> <span class="s1">&#39;VehOdo&#39;</span><span class="p">,</span> <span class="s1">&#39;WarrantyCost&#39;</span><span class="p">]]</span>
+<span class="n">scaler_s</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="n">standard_variables</span> <span class="o">=</span> <span class="n">scaler_s</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">standard_variables</span><span class="p">)</span>
+<span class="n">carAuction</span><span class="p">[[</span><span class="s1">&#39;MMRCurrentAuctionAveragePrice&#39;</span><span class="p">,</span> <span class="s1">&#39;VehBCost&#39;</span><span class="p">,</span> <span class="s1">&#39;VehicleAge&#39;</span><span class="p">,</span> <span class="s1">&#39;VehOdo&#39;</span><span class="p">,</span> <span class="s1">&#39;WarrantyCost&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">standard_variables</span>
+<span class="n">carAuction</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[-1.33756114 -0.80983074  2.22646285  0.26402682 -0.67480576]
+ [-1.7625022  -1.77920496  2.22646285  0.77636434  1.71108844]
+ [ 1.16015257  0.44465355 -0.1066831  -0.96701301 -1.13622094]
+ ...
+ [ 1.29699102  1.29998375 -0.1066831  -0.82777976  0.22503596]
+ [-1.18547263 -0.69578671 -0.1066831  -1.55907774 -1.31027792]
+ [ 0.01310022  0.15954349  0.47660339  0.75042406 -0.0606802 ]]
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[48]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>IsBadBuy</th>
+      <th>MMRCurrentAuctionAveragePrice</th>
+      <th>VehBCost</th>
+      <th>VehicleAge</th>
+      <th>VehOdo</th>
+      <th>WarrantyCost</th>
+      <th>Auction_MANHEIM</th>
+      <th>Auction_OTHER</th>
+      <th>Color_BLACK</th>
+      <th>Color_BLUE</th>
+      <th>...</th>
+      <th>Size_SMALL TRUCK</th>
+      <th>Size_SPECIALTY</th>
+      <th>Size_SPORTS</th>
+      <th>Size_VAN</th>
+      <th>TopThreeAmericanName_FORD</th>
+      <th>TopThreeAmericanName_GM</th>
+      <th>TopThreeAmericanName_OTHER</th>
+      <th>WheelType_Covers</th>
+      <th>WheelType_Special</th>
+      <th>WheelType_unkwnWheel</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>No</td>
+      <td>-1.337561</td>
+      <td>-0.809831</td>
+      <td>2.226463</td>
+      <td>0.264027</td>
+      <td>-0.674806</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Yes</td>
+      <td>-1.762502</td>
+      <td>-1.779205</td>
+      <td>2.226463</td>
+      <td>0.776364</td>
+      <td>1.711088</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>No</td>
+      <td>1.160153</td>
+      <td>0.444654</td>
+      <td>-0.106683</td>
+      <td>-0.967013</td>
+      <td>-1.136221</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>No</td>
+      <td>0.908320</td>
+      <td>1.014874</td>
+      <td>0.476603</td>
+      <td>-1.064306</td>
+      <td>-0.182192</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>No</td>
+      <td>2.227245</td>
+      <td>1.927226</td>
+      <td>0.476603</td>
+      <td>1.032227</td>
+      <td>-0.701079</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>9995</th>
+      <td>No</td>
+      <td>0.585184</td>
+      <td>-0.068545</td>
+      <td>-0.106683</td>
+      <td>0.942014</td>
+      <td>-0.487612</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9996</th>
+      <td>No</td>
+      <td>-0.492625</td>
+      <td>0.159543</td>
+      <td>1.643176</td>
+      <td>1.233962</td>
+      <td>0.431934</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9997</th>
+      <td>No</td>
+      <td>1.296991</td>
+      <td>1.299984</td>
+      <td>-0.106683</td>
+      <td>-0.827780</td>
+      <td>0.225036</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9998</th>
+      <td>No</td>
+      <td>-1.185473</td>
+      <td>-0.695787</td>
+      <td>-0.106683</td>
+      <td>-1.559078</td>
+      <td>-1.310278</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9999</th>
+      <td>No</td>
+      <td>0.013100</td>
+      <td>0.159543</td>
+      <td>0.476603</td>
+      <td>0.750424</td>
+      <td>-0.060680</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>10000 rows &#215; 40 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[49]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Partition the data</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">carAuction</span><span class="p">[</span><span class="s1">&#39;IsBadBuy&#39;</span><span class="p">]</span>
+<span class="n">predictors</span> <span class="o">=</span> <span class="n">carAuction</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;IsBadBuy&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">predictors_train</span><span class="p">,</span> <span class="n">predictors_test</span><span class="p">,</span> <span class="n">target_train</span><span class="p">,</span> <span class="n">target_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">predictors_test</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(7000, 39) (3000, 39) (7000,) (3000,)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[50]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the porportion of target variable for training data set</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">target_train</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span> <span class="kc">True</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>No     0.869571
+Yes    0.130429
+Name: IsBadBuy, dtype: float64
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[51]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the porportion of target variable for testing data set</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">target_test</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span> <span class="kc">True</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>No     0.872667
+Yes    0.127333
+Name: IsBadBuy, dtype: float64
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>3. Neural network prediction and evaluation<a rel="noopener" class="anchor-link" href="#3.-Neural-network-prediction-and-evaluation">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[52]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Build a neural network on training data</span>
+<span class="k">class</span> <span class="nc">neural_network</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[53]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Encode label to numeric</span>
+<span class="n">label_encoder</span> <span class="o">=</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">LabelEncoder</span><span class="p">()</span>
+<span class="n">new_label</span> <span class="o">=</span> <span class="n">label_encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">target_train</span><span class="p">)</span>
+<span class="n">new_label</span><span class="p">[:</span><span class="mi">5</span><span class="p">],</span> <span class="n">target_train</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[53]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(array([0, 0, 0, 1, 0]), 7681     No
+ 9031     No
+ 3691     No
+ 202     Yes
+ 5625     No
+ Name: IsBadBuy, dtype: category
+ Categories (2, object): [&#39;No&#39;, &#39;Yes&#39;])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[54]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create tensors from pandas dataframe</span>
+<span class="n">predictors_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">target_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">label_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">target_train</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+<span class="n">predictors_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_test</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">target_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">label_encoder</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">target_test</span><span class="o">.</span><span class="n">values</span><span class="p">))</span>
+
+<span class="c1"># Create tensor dataset (set target variable to long int type)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_train_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_train_tensor</span><span class="o">.</span><span class="n">long</span><span class="p">())</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_test_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_test_tensor</span><span class="o">.</span><span class="n">long</span><span class="p">())</span>
+
+<span class="c1"># Define training and testing data loader, and set batch size to 64</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[55]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define training loop function</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">):</span>
+        <span class="c1"># Training Phase </span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">loss_train</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_train</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">n_epochs</span><span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">{}</span><span class="s1">, Training loss </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">loss_train</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[56]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Model training</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">neural_network</span><span class="p">(</span><span class="mi">39</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span> <span class="o">=</span> <span class="n">train_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 0, Training loss 0.41379300112074074
+Epoch 10, Training loss 0.29682058522647076
+Epoch 20, Training loss 0.27115713127634744
+Epoch 30, Training loss 0.24331858537413859
+Epoch 40, Training loss 0.21893687932328745
+Epoch 49, Training loss 0.1982664566148411
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[57]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define testing function</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+ 
+  <span class="c1"># testing phase</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+  <span class="n">predict_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">predict_test</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">labels_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">labels_test</span> <span class="o">=</span> <span class="p">[]</span>
+
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">index_</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+          <span class="n">predict_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">predicted</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">labels_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">index_</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+          <span class="n">predict_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">predicted</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">labels_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Confusion matrix on train:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="n">confusion_matrix</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">labels_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Classification report on train:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="n">classification_report</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">labels_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Confusion matrix on test:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="n">confusion_matrix</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">labels_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Classification report on test:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>  <span class="n">classification_report</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">labels_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[58]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine evaluation results</span>
+<span class="n">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Confusion matrix on train:
+ [[6062   25]
+ [ 471  442]]
+
+Classification report on train:
+               precision    recall  f1-score   support
+
+           0       0.93      1.00      0.96      6087
+           1       0.95      0.48      0.64       913
+
+    accuracy                           0.93      7000
+   macro avg       0.94      0.74      0.80      7000
+weighted avg       0.93      0.93      0.92      7000
+
+
+Confusion matrix on test:
+ [[2547   71]
+ [ 284   98]]
+
+Classification report on test:
+               precision    recall  f1-score   support
+
+           0       0.90      0.97      0.93      2618
+           1       0.58      0.26      0.36       382
+
+    accuracy                           0.88      3000
+   macro avg       0.74      0.61      0.65      3000
+weighted avg       0.86      0.88      0.86      3000
+
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Q1. On the testing set, how many bad buy cars are predicted as Not bad buy?<br/>
+284</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Q2. Does the decision tree model have better performance on majority (IsBadBuy = &#39;No&#39;) or minority class (IsBadBuy = &#39;Yes&#39;)? why? <br/>
+Majority class. It has higher F-measure, precision, and recall values.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Q3. Assume the following costs/benefits:</p>
+<ul>
+<li>Cost of buying a bad car: \$2500</li>
+<li>Profit of purchasing a good car: \$350</li>
+<li>Opportunity cost of a good car that is missed: \$350
+<br/>
+Based on the above costs / benefits, what is the total net benefit / cost of this neural network on testing data?<br/>
+<br/>
+Cost: 284 <em> 2500<br/>
+Profit: 2547 </em> 350<br/>
+Opportunity cost: 71 * 350<br/>
+Profit – Cost - Opportunity cost: 156,600<br/>
+<br/></li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Part 2: Numeric Prediction<a rel="noopener" class="anchor-link" href="#Part-2:-Numeric-Prediction">&#182;</a></h2><hr/>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In order for a health insurance company to make money, it needs to collect more
+in yearly premiums than it spends on medical care to its beneficiaries. As a result, insurers invest a great deal of time and money in developing models that accurately forecast medical expenses for the insured population.<br/>
+<br/>
+Medical expenses are difficult to estimate because the most costly conditions are rare and seemingly random. Still, some conditions are more prevalent for certain segments of the population. For instance, lung cancer is more likely among smokers than non-smokers, and heart disease may be more likely among the obese.<br/>
+<br/>
+The goal of this analysis is to use patient data to estimate the average medical
+care expenses for such population segments. These estimates can be used to create actuarial tables that set the price of yearly premiums higher or lower, 
+depending on the expected treatment costs.<br/>
+<br/>
+The insurance data set has 1338 observations of 7 variables.
+<br/>
+We will use this file to predict the medical expenses.
+<br/>
+<br/>
+VARIABLE DESCRIPTIONS:<br/>
+age:          age in years<br/>
+sex:          gender<br/>
+bmi:          body mass index<br/>
+children:   how many children do they have?<br/>
+smoker:   do they smoke?<br/>
+region:   geographic region<br/>
+expenses:   yearly medical expenses<br/>
+<br/>
+Target variable: <strong>expenses</strong></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>Upload and clean data<a rel="noopener" class="anchor-link" href="#Upload-and-clean-data">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[59]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Mounting Google Drive</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(&quot;/content/drive&quot;, force_remount=True).
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[60]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">linear_model</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[61]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Read data</span>
+<span class="n">insurance</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/content/drive/MyDrive/DL_data/insurance.csv&quot;</span><span class="p">)</span>
+<span class="n">insurance</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[61]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>sex</th>
+      <th>bmi</th>
+      <th>children</th>
+      <th>smoker</th>
+      <th>region</th>
+      <th>expenses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>19</td>
+      <td>female</td>
+      <td>27.9</td>
+      <td>0</td>
+      <td>yes</td>
+      <td>southwest</td>
+      <td>16884.92</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>18</td>
+      <td>male</td>
+      <td>33.8</td>
+      <td>1</td>
+      <td>no</td>
+      <td>southeast</td>
+      <td>1725.55</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>28</td>
+      <td>male</td>
+      <td>33.0</td>
+      <td>3</td>
+      <td>no</td>
+      <td>southeast</td>
+      <td>4449.46</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>33</td>
+      <td>male</td>
+      <td>22.7</td>
+      <td>0</td>
+      <td>no</td>
+      <td>northwest</td>
+      <td>21984.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>32</td>
+      <td>male</td>
+      <td>28.9</td>
+      <td>0</td>
+      <td>no</td>
+      <td>northwest</td>
+      <td>3866.86</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1333</th>
+      <td>50</td>
+      <td>male</td>
+      <td>31.0</td>
+      <td>3</td>
+      <td>no</td>
+      <td>northwest</td>
+      <td>10600.55</td>
+    </tr>
+    <tr>
+      <th>1334</th>
+      <td>18</td>
+      <td>female</td>
+      <td>31.9</td>
+      <td>0</td>
+      <td>no</td>
+      <td>northeast</td>
+      <td>2205.98</td>
+    </tr>
+    <tr>
+      <th>1335</th>
+      <td>18</td>
+      <td>female</td>
+      <td>36.9</td>
+      <td>0</td>
+      <td>no</td>
+      <td>southeast</td>
+      <td>1629.83</td>
+    </tr>
+    <tr>
+      <th>1336</th>
+      <td>21</td>
+      <td>female</td>
+      <td>25.8</td>
+      <td>0</td>
+      <td>no</td>
+      <td>southwest</td>
+      <td>2007.95</td>
+    </tr>
+    <tr>
+      <th>1337</th>
+      <td>61</td>
+      <td>female</td>
+      <td>29.1</td>
+      <td>0</td>
+      <td>yes</td>
+      <td>northwest</td>
+      <td>29141.36</td>
+    </tr>
+  </tbody>
+</table>
+<p>1338 rows &#215; 7 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[62]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the head rows of a data frame</span>
+<span class="n">insurance</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[62]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>sex</th>
+      <th>bmi</th>
+      <th>children</th>
+      <th>smoker</th>
+      <th>region</th>
+      <th>expenses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>19</td>
+      <td>female</td>
+      <td>27.9</td>
+      <td>0</td>
+      <td>yes</td>
+      <td>southwest</td>
+      <td>16884.92</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>18</td>
+      <td>male</td>
+      <td>33.8</td>
+      <td>1</td>
+      <td>no</td>
+      <td>southeast</td>
+      <td>1725.55</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>28</td>
+      <td>male</td>
+      <td>33.0</td>
+      <td>3</td>
+      <td>no</td>
+      <td>southeast</td>
+      <td>4449.46</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>33</td>
+      <td>male</td>
+      <td>22.7</td>
+      <td>0</td>
+      <td>no</td>
+      <td>northwest</td>
+      <td>21984.47</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>32</td>
+      <td>male</td>
+      <td>28.9</td>
+      <td>0</td>
+      <td>no</td>
+      <td>northwest</td>
+      <td>3866.86</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[63]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine variable type</span>
+<span class="n">insurance</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[63]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>age           int64
+sex          object
+bmi         float64
+children      int64
+smoker       object
+region       object
+expenses    float64
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[64]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Change categorical variables to &quot;category&quot;</span>
+<span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;sex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;sex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;smoker&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;smoker&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+<span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[65]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine variable type</span>
+<span class="n">insurance</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[65]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>age            int64
+sex         category
+bmi          float64
+children       int64
+smoker      category
+region      category
+expenses     float64
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[66]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Data exploration: some examples</span>
+<span class="c1"># Histogram of insurance expenses</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;expenses&#39;</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">)</span>
+<span class="n">snsplot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Histogram of expenses in the insurance data set&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[66]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Text(0.5, 1.0, &#39;Histogram of expenses in the insurance data set&#39;)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[67]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># exploring relationships among all numeric variables: correlation matrix</span>
+<span class="n">insurance</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[67]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>bmi</th>
+      <th>children</th>
+      <th>expenses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>age</th>
+      <td>1.000000</td>
+      <td>0.109341</td>
+      <td>0.042469</td>
+      <td>0.299008</td>
+    </tr>
+    <tr>
+      <th>bmi</th>
+      <td>0.109341</td>
+      <td>1.000000</td>
+      <td>0.012645</td>
+      <td>0.198576</td>
+    </tr>
+    <tr>
+      <th>children</th>
+      <td>0.042469</td>
+      <td>0.012645</td>
+      <td>1.000000</td>
+      <td>0.067998</td>
+    </tr>
+    <tr>
+      <th>expenses</th>
+      <td>0.299008</td>
+      <td>0.198576</td>
+      <td>0.067998</td>
+      <td>1.000000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>Partition the data set for regression model<a rel="noopener" class="anchor-link" href="#Partition-the-data-set-for-regression-model">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[68]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create dummy variables</span>
+<span class="n">insurance</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">insurance</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sex&#39;</span><span class="p">,</span><span class="s1">&#39;smoker&#39;</span><span class="p">,</span><span class="s1">&#39;region&#39;</span><span class="p">],</span> <span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">insurance</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[68]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>age</th>
+      <th>bmi</th>
+      <th>children</th>
+      <th>expenses</th>
+      <th>sex_male</th>
+      <th>smoker_yes</th>
+      <th>region_northwest</th>
+      <th>region_southeast</th>
+      <th>region_southwest</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>19</td>
+      <td>27.9</td>
+      <td>0</td>
+      <td>16884.92</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>18</td>
+      <td>33.8</td>
+      <td>1</td>
+      <td>1725.55</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>28</td>
+      <td>33.0</td>
+      <td>3</td>
+      <td>4449.46</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>33</td>
+      <td>22.7</td>
+      <td>0</td>
+      <td>21984.47</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>32</td>
+      <td>28.9</td>
+      <td>0</td>
+      <td>3866.86</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>1333</th>
+      <td>50</td>
+      <td>31.0</td>
+      <td>3</td>
+      <td>10600.55</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1334</th>
+      <td>18</td>
+      <td>31.9</td>
+      <td>0</td>
+      <td>2205.98</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1335</th>
+      <td>18</td>
+      <td>36.9</td>
+      <td>0</td>
+      <td>1629.83</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1336</th>
+      <td>21</td>
+      <td>25.8</td>
+      <td>0</td>
+      <td>2007.95</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1337</th>
+      <td>61</td>
+      <td>29.1</td>
+      <td>0</td>
+      <td>29141.36</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1338 rows &#215; 9 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[69]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Apply standardization</span>
+<span class="n">numeric_variables</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">[[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;bmi&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">]]</span>
+<span class="n">scaler_s</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="n">standard_variables</span> <span class="o">=</span> <span class="n">scaler_s</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">standard_variables</span><span class="p">)</span>
+<span class="n">insurance</span><span class="p">[[</span><span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;bmi&#39;</span><span class="p">,</span> <span class="s1">&#39;children&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">standard_variables</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[[-1.43876426 -0.4536457  -0.90861367]
+ [-1.50996545  0.51418574 -0.07876719]
+ [-0.79795355  0.38295436  1.58092576]
+ ...
+ [-1.50996545  1.02270734 -0.90861367]
+ [-1.29636188 -0.79812808 -0.90861367]
+ [ 1.55168573 -0.25679863 -0.90861367]]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[70]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Partition the data</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">insurance</span><span class="p">[</span><span class="s1">&#39;expenses&#39;</span><span class="p">]</span>
+<span class="n">predictors</span> <span class="o">=</span> <span class="n">insurance</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;expenses&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">predictors_train</span><span class="p">,</span> <span class="n">predictors_test</span><span class="p">,</span> <span class="n">target_train</span><span class="p">,</span> <span class="n">target_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">predictors_test</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(936, 8) (402, 8) (936,) (402,)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[71]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the distribution of target variable for training data set</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">target_train</span><span class="p">)</span>
+<span class="n">snsplot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Histogram of expenses in the training data set&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[71]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Text(0.5, 1.0, &#39;Histogram of expenses in the training data set&#39;)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[72]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the distribution of target variable for testing data set</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">target_test</span><span class="p">)</span>
+<span class="n">snsplot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Histogram of expenses in the testing data set&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[72]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Text(0.5, 1.0, &#39;Histogram of expenses in the testing data set&#39;)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>3. Neural network prediction and evaluation<a rel="noopener" class="anchor-link" href="#3.-Neural-network-prediction-and-evaluation">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[73]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Build a neural network on training data</span>
+<span class="k">class</span> <span class="nc">neural_network</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[74]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create tensor from pandas dataframe</span>
+<span class="n">predictors_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">target_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target_train</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">predictors_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_test</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">target_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target_test</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Create tensor dataset (set target variable to float type)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_train_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_train_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_test_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_test_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+
+<span class="c1"># Define training and testing data loader, and set batch size to 64</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[75]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define training loop function</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">):</span>
+        <span class="c1"># Training Phase </span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">loss_train</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_train</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">n_epochs</span><span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">{}</span><span class="s1">, Training loss </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">loss_train</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[76]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Model training</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">neural_network</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span> <span class="o">=</span> <span class="n">train_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 0, Training loss 199992728.53333333
+Epoch 100, Training loss 22035437.366666667
+Epoch 200, Training loss 15782689.9
+Epoch 300, Training loss 9938172.3
+Epoch 400, Training loss 6737472.733333333
+Epoch 499, Training loss 4719505.883333334
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[77]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define testing function</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+ 
+  <span class="c1"># testing phase</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+  <span class="n">predict_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">predict_test</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">label_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">label_test</span> <span class="o">=</span> <span class="p">[]</span>
+
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">predict_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">label_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">predict_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">label_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+  
+  <span class="n">MAE_train</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)))</span>
+  <span class="n">RMSE_train</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)),</span> <span class="n">squared</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+  <span class="n">MAE_test</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)))</span>
+  <span class="n">RMSE_test</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)),</span> <span class="n">squared</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training MAE and RMSE:&quot;</span><span class="p">,</span> <span class="n">MAE_train</span><span class="p">,</span> <span class="n">RMSE_train</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing MAE and RMSE:&quot;</span><span class="p">,</span> <span class="n">MAE_test</span><span class="p">,</span> <span class="n">RMSE_test</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[78]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine evaluation results</span>
+<span class="n">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training MAE and RMSE: 981.2650252774231 1850.7609150237186
+
+testing MAE and RMSE: 3531.99352389663 6494.012998850611
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[79]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">html</span> <span class="s2">&quot;/content/drive/MyDrive/DL_lab/Lab6_Business_Applications_with_Tabular_Data.ipynb&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[NbConvertApp] Converting notebook /content/drive/MyDrive/DL_lab/Lab6_Business_Applications_with_Tabular_Data.ipynb to html
+[NbConvertApp] Writing 379141 bytes to /content/drive/MyDrive/DL_lab/Lab6_Business_Applications_with_Tabular_Data.html
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+
+ 
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.3,
+							'renderLatex': false
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>

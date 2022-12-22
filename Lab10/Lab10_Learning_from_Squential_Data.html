@@ -1,0 +1,2047 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+
+  <div class="border-box-sizing">
+    <div class="container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Lab 10: Deep Learning For Sequential Data<a rel="noopener" class="anchor-link" href="#Lab-10:-Deep-Learning-For-Sequential-Data">&#182;</a></h1><hr/>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Future total sales of pizza<br/></h2>
+<p>In this lab, we will predict the future total sales of pizza based on the sequential transactions by using LSTM.<br/><br/></p>
+<p>This pizza sales dataset make up 12 relevant features:<br/></p>
+<p>order_id: Unique identifier for each order placed by a table<br/>
+order_details_id: Unique identifier for each pizza placed within each order (pizzas of the same type and size are kept in the same row, and the quantity increases)<br/>
+pizza_id: Unique key identifier that ties the pizza ordered to its details, like size and price<br/>
+quantity: Quantity ordered for each pizza of the same type and size
+order_date: Date the order was placed (entered into the system prior to cooking &amp; serving)<br/>
+order_time: Time the order was placed (entered into the system prior to cooking &amp; serving)<br/>
+unit_price: Price of the pizza in USD<br/>
+total_price: unit_price * quantity<br/>
+pizza_size: Size of the pizza (Small, Medium, Large, X Large, or XX Large)<br/>
+pizza_type: Unique key identifier that ties the pizza ordered to its details, like size and price<br/>
+pizza_ingredients: ingredients used in the pizza as shown in the menu (they all include Mozzarella Cheese, even if not specified; and they all include Tomato Sauce, unless another sauce is specified)<br/>
+pizza_name: Name of the pizza as shown in the menu<br/></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[181]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Mounting Google Drive</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Drive already mounted at /content/drive; to attempt to forcibly remount, call drive.mount(&quot;/content/drive&quot;, force_remount=True).
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[182]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">preprocessing</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>1. Upload and clean data<a rel="noopener" class="anchor-link" href="#1.-Upload-and-clean-data">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[183]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Read data</span>
+<span class="n">PizzaSales</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;/content/drive/MyDrive/DL_data/PizzaSales.csv&quot;</span><span class="p">)</span>
+<span class="n">PizzaSales</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[183]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>order_details_id</th>
+      <th>order_id</th>
+      <th>pizza_id</th>
+      <th>quantity</th>
+      <th>order_date</th>
+      <th>order_time</th>
+      <th>unit_price</th>
+      <th>total_price</th>
+      <th>pizza_size</th>
+      <th>pizza_category</th>
+      <th>pizza_ingredients</th>
+      <th>pizza_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>hawaiian_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:38:36</td>
+      <td>13.25</td>
+      <td>13.25</td>
+      <td>M</td>
+      <td>Classic</td>
+      <td>Sliced Ham, Pineapple, Mozzarella Cheese</td>
+      <td>The Hawaiian Pizza</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2</td>
+      <td>classic_dlx_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>16.00</td>
+      <td>16.00</td>
+      <td>M</td>
+      <td>Classic</td>
+      <td>Pepperoni, Mushrooms, Red Onions, Red Peppers,...</td>
+      <td>The Classic Deluxe Pizza</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>2</td>
+      <td>five_cheese_l</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>18.50</td>
+      <td>18.50</td>
+      <td>L</td>
+      <td>Veggie</td>
+      <td>Mozzarella Cheese, Provolone Cheese, Smoked Go...</td>
+      <td>The Five Cheese Pizza</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2</td>
+      <td>ital_supr_l</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>20.75</td>
+      <td>20.75</td>
+      <td>L</td>
+      <td>Supreme</td>
+      <td>Calabrese Salami, Capocollo, Tomatoes, Red Oni...</td>
+      <td>The Italian Supreme Pizza</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>2</td>
+      <td>mexicana_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>16.00</td>
+      <td>16.00</td>
+      <td>M</td>
+      <td>Veggie</td>
+      <td>Tomatoes, Red Peppers, Jalapeno Peppers, Red O...</td>
+      <td>The Mexicana Pizza</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>48615</th>
+      <td>48616</td>
+      <td>21348</td>
+      <td>ckn_alfredo_m</td>
+      <td>1</td>
+      <td>12/31/15</td>
+      <td>21:23:10</td>
+      <td>16.75</td>
+      <td>16.75</td>
+      <td>M</td>
+      <td>Chicken</td>
+      <td>Chicken, Red Onions, Red Peppers, Mushrooms, A...</td>
+      <td>The Chicken Alfredo Pizza</td>
+    </tr>
+    <tr>
+      <th>48616</th>
+      <td>48617</td>
+      <td>21348</td>
+      <td>four_cheese_l</td>
+      <td>1</td>
+      <td>12/31/15</td>
+      <td>21:23:10</td>
+      <td>17.95</td>
+      <td>17.95</td>
+      <td>L</td>
+      <td>Veggie</td>
+      <td>Ricotta Cheese, Gorgonzola Piccante Cheese, Mo...</td>
+      <td>The Four Cheese Pizza</td>
+    </tr>
+    <tr>
+      <th>48617</th>
+      <td>48618</td>
+      <td>21348</td>
+      <td>napolitana_s</td>
+      <td>1</td>
+      <td>12/31/15</td>
+      <td>21:23:10</td>
+      <td>12.00</td>
+      <td>12.00</td>
+      <td>S</td>
+      <td>Classic</td>
+      <td>Tomatoes, Anchovies, Green Olives, Red Onions,...</td>
+      <td>The Napolitana Pizza</td>
+    </tr>
+    <tr>
+      <th>48618</th>
+      <td>48619</td>
+      <td>21349</td>
+      <td>mexicana_l</td>
+      <td>1</td>
+      <td>12/31/15</td>
+      <td>22:09:54</td>
+      <td>20.25</td>
+      <td>20.25</td>
+      <td>L</td>
+      <td>Veggie</td>
+      <td>Tomatoes, Red Peppers, Jalapeno Peppers, Red O...</td>
+      <td>The Mexicana Pizza</td>
+    </tr>
+    <tr>
+      <th>48619</th>
+      <td>48620</td>
+      <td>21350</td>
+      <td>bbq_ckn_s</td>
+      <td>1</td>
+      <td>12/31/15</td>
+      <td>23:02:05</td>
+      <td>12.75</td>
+      <td>12.75</td>
+      <td>S</td>
+      <td>Chicken</td>
+      <td>Barbecued Chicken, Red Peppers, Green Peppers,...</td>
+      <td>The Barbecue Chicken Pizza</td>
+    </tr>
+  </tbody>
+</table>
+<p>48620 rows &#215; 12 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[184]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Show the head rows of a data frame</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[184]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>order_details_id</th>
+      <th>order_id</th>
+      <th>pizza_id</th>
+      <th>quantity</th>
+      <th>order_date</th>
+      <th>order_time</th>
+      <th>unit_price</th>
+      <th>total_price</th>
+      <th>pizza_size</th>
+      <th>pizza_category</th>
+      <th>pizza_ingredients</th>
+      <th>pizza_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>hawaiian_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:38:36</td>
+      <td>13.25</td>
+      <td>13.25</td>
+      <td>M</td>
+      <td>Classic</td>
+      <td>Sliced Ham, Pineapple, Mozzarella Cheese</td>
+      <td>The Hawaiian Pizza</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2</td>
+      <td>classic_dlx_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>16.00</td>
+      <td>16.00</td>
+      <td>M</td>
+      <td>Classic</td>
+      <td>Pepperoni, Mushrooms, Red Onions, Red Peppers,...</td>
+      <td>The Classic Deluxe Pizza</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>2</td>
+      <td>five_cheese_l</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>18.50</td>
+      <td>18.50</td>
+      <td>L</td>
+      <td>Veggie</td>
+      <td>Mozzarella Cheese, Provolone Cheese, Smoked Go...</td>
+      <td>The Five Cheese Pizza</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>2</td>
+      <td>ital_supr_l</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>20.75</td>
+      <td>20.75</td>
+      <td>L</td>
+      <td>Supreme</td>
+      <td>Calabrese Salami, Capocollo, Tomatoes, Red Oni...</td>
+      <td>The Italian Supreme Pizza</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>2</td>
+      <td>mexicana_m</td>
+      <td>1</td>
+      <td>1/1/15</td>
+      <td>11:57:40</td>
+      <td>16.00</td>
+      <td>16.00</td>
+      <td>M</td>
+      <td>Veggie</td>
+      <td>Tomatoes, Red Peppers, Jalapeno Peppers, Red O...</td>
+      <td>The Mexicana Pizza</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[185]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine variable type</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[185]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>order_details_id       int64
+order_id               int64
+pizza_id              object
+quantity               int64
+order_date            object
+order_time            object
+unit_price           float64
+total_price          float64
+pizza_size            object
+pizza_category        object
+pizza_ingredients     object
+pizza_name            object
+dtype: object</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[186]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine data size</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[186]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(48620, 12)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>2. Simple data exploration<a rel="noopener" class="anchor-link" href="#2.-Simple-data-exploration">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[187]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Convert order_date column to datetime</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_date&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[188]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Exam the number of pizza sold by month</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">month</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;January&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">2</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;February&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">3</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;March&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">4</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;April&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">5</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;May&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">6</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;June&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">7</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;July&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">8</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;August&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">9</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;September&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">10</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;October&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">11</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;November&#39;</span>
+<span class="n">PizzaSales</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">==</span><span class="mi">12</span><span class="p">),</span> <span class="s1">&#39;order_month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;December&#39;</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_month&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[188]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>July         4301
+May          4239
+March        4186
+November     4185
+January      4156
+August       4094
+April        4067
+June         4025
+February     3892
+December     3859
+September    3819
+October      3797
+Name: order_month, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[189]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Exam the number of pizza sold by day</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s2">&quot;Dayofweek&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">day_name</span><span class="p">()</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s2">&quot;Dayofweek&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[189]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Friday       8106
+Saturday     7355
+Thursday     7323
+Wednesday    6797
+Tuesday      6753
+Monday       6369
+Sunday       5917
+Name: Dayofweek, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[190]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the number of pizza sold by hour</span>
+<span class="n">PizzaSales</span><span class="p">[[</span><span class="s1">&#39;Hour&#39;</span><span class="p">,</span><span class="s1">&#39;Minute&#39;</span><span class="p">,</span> <span class="s1">&#39;Second&#39;</span><span class="p">]]</span><span class="o">=</span> <span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s2">&quot;Hour&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[190]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>12    6543
+13    6203
+18    5359
+17    5143
+19    4350
+16    4185
+14    3521
+20    3487
+15    3170
+11    2672
+21    2528
+22    1370
+23      68
+10      17
+9        4
+Name: Hour, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[191]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the number of pizza sold by pizza id</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s2">&quot;pizza_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[191]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>big_meat_s        1811
+thai_ckn_l        1365
+five_cheese_l     1359
+four_cheese_l     1273
+classic_dlx_m     1159
+                  ... 
+mexicana_s         160
+calabrese_s         99
+ckn_alfredo_s       96
+green_garden_l      94
+the_greek_xxl       28
+Name: pizza_id, Length: 91, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[192]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the number of pizza sold by pizza size</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s2">&quot;pizza_size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[192]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>L      18526
+M      15385
+S      14137
+XL       544
+XXL       28
+Name: pizza_size, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[193]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[193]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>21350</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[194]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the average order value</span>
+<span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;total_price&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span><span class="o">/</span><span class="n">PizzaSales</span><span class="p">[</span><span class="s1">&#39;order_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[194]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>38.30726229508197</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>3. Partition the data set for pizza sales prediction<a rel="noopener" class="anchor-link" href="#3.-Partition-the-data-set-for-pizza-sales-prediction">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[195]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Organize sales by date</span>
+<span class="n">sales_by_date</span> <span class="o">=</span> <span class="n">PizzaSales</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;order_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">sales_by_date</span><span class="p">[</span><span class="s2">&quot;Dayofweek&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">day_name</span><span class="p">()</span>
+<span class="n">sales_by_date</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="p">[[</span><span class="s1">&#39;quantity&#39;</span><span class="p">,</span><span class="s1">&#39;total_price&#39;</span><span class="p">,</span><span class="s1">&#39;Dayofweek&#39;</span><span class="p">]]</span>
+<span class="n">sales_by_date</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[195]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>quantity</th>
+      <th>total_price</th>
+      <th>Dayofweek</th>
+    </tr>
+    <tr>
+      <th>order_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2015-01-01</th>
+      <td>162</td>
+      <td>2713.85</td>
+      <td>Thursday</td>
+    </tr>
+    <tr>
+      <th>2015-01-02</th>
+      <td>165</td>
+      <td>2731.90</td>
+      <td>Friday</td>
+    </tr>
+    <tr>
+      <th>2015-01-03</th>
+      <td>158</td>
+      <td>2662.40</td>
+      <td>Saturday</td>
+    </tr>
+    <tr>
+      <th>2015-01-04</th>
+      <td>106</td>
+      <td>1755.45</td>
+      <td>Sunday</td>
+    </tr>
+    <tr>
+      <th>2015-01-05</th>
+      <td>125</td>
+      <td>2065.95</td>
+      <td>Monday</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2015-12-27</th>
+      <td>89</td>
+      <td>1419.00</td>
+      <td>Sunday</td>
+    </tr>
+    <tr>
+      <th>2015-12-28</th>
+      <td>102</td>
+      <td>1637.20</td>
+      <td>Monday</td>
+    </tr>
+    <tr>
+      <th>2015-12-29</th>
+      <td>80</td>
+      <td>1353.25</td>
+      <td>Tuesday</td>
+    </tr>
+    <tr>
+      <th>2015-12-30</th>
+      <td>82</td>
+      <td>1337.80</td>
+      <td>Wednesday</td>
+    </tr>
+    <tr>
+      <th>2015-12-31</th>
+      <td>178</td>
+      <td>2916.00</td>
+      <td>Thursday</td>
+    </tr>
+  </tbody>
+</table>
+<p>358 rows &#215; 3 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[196]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create dummy variables</span>
+<span class="n">sales_by_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">sales_by_date</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Dayofweek&#39;</span><span class="p">],</span><span class="n">drop_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sales_by_date</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[196]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>quantity</th>
+      <th>total_price</th>
+      <th>Dayofweek_Monday</th>
+      <th>Dayofweek_Saturday</th>
+      <th>Dayofweek_Sunday</th>
+      <th>Dayofweek_Thursday</th>
+      <th>Dayofweek_Tuesday</th>
+      <th>Dayofweek_Wednesday</th>
+    </tr>
+    <tr>
+      <th>order_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2015-01-01</th>
+      <td>162</td>
+      <td>2713.85</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-01-02</th>
+      <td>165</td>
+      <td>2731.90</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-01-03</th>
+      <td>158</td>
+      <td>2662.40</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-01-04</th>
+      <td>106</td>
+      <td>1755.45</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-01-05</th>
+      <td>125</td>
+      <td>2065.95</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2015-12-27</th>
+      <td>89</td>
+      <td>1419.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-12-28</th>
+      <td>102</td>
+      <td>1637.20</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-12-29</th>
+      <td>80</td>
+      <td>1353.25</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2015-12-30</th>
+      <td>82</td>
+      <td>1337.80</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2015-12-31</th>
+      <td>178</td>
+      <td>2916.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>358 rows &#215; 8 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[197]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Extract the total sales</span>
+<span class="n">total_sales</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;total_price&#39;</span><span class="p">:</span><span class="s1">&#39;total_sales&#39;</span><span class="p">})</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">sales_by_date</span><span class="p">),</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[198]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Apply standardization</span>
+<span class="n">numeric_variables</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="p">[[</span><span class="s1">&#39;quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;total_price&#39;</span><span class="p">]]</span>
+<span class="n">scaler_s</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="n">standard_variables</span> <span class="o">=</span> <span class="n">scaler_s</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">numeric_variables</span><span class="p">)</span>
+<span class="n">sales_by_date</span><span class="p">[[</span><span class="s1">&#39;quantity&#39;</span><span class="p">,</span> <span class="s1">&#39;total_price&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">standard_variables</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[199]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create sequences</span>
+<span class="n">seq1</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">sales_by_date</span><span class="p">)</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+<span class="n">seq2</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">sales_by_date</span><span class="p">)</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+<span class="n">seq3</span> <span class="o">=</span> <span class="n">sales_by_date</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">sales_by_date</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">seq_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">seq1</span><span class="p">,</span><span class="n">seq2</span><span class="p">,</span><span class="n">seq3</span><span class="p">,</span><span class="n">total_sales</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">seq_data</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[199]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+  <div>
+    <div class="colab-df-container">
+      <div>
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>quantity</th>
+      <th>total_price</th>
+      <th>Dayofweek_Monday</th>
+      <th>Dayofweek_Saturday</th>
+      <th>Dayofweek_Sunday</th>
+      <th>Dayofweek_Thursday</th>
+      <th>Dayofweek_Tuesday</th>
+      <th>Dayofweek_Wednesday</th>
+      <th>quantity</th>
+      <th>total_price</th>
+      <th>...</th>
+      <th>Dayofweek_Wednesday</th>
+      <th>quantity</th>
+      <th>total_price</th>
+      <th>Dayofweek_Monday</th>
+      <th>Dayofweek_Saturday</th>
+      <th>Dayofweek_Sunday</th>
+      <th>Dayofweek_Thursday</th>
+      <th>Dayofweek_Tuesday</th>
+      <th>Dayofweek_Wednesday</th>
+      <th>total_sales</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0.964361</td>
+      <td>1.059069</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1.087340</td>
+      <td>1.103595</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0.800390</td>
+      <td>0.932151</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1755.45</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.087340</td>
+      <td>1.103595</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.800390</td>
+      <td>0.932151</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-1.331236</td>
+      <td>-1.305136</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2065.95</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0.800390</td>
+      <td>0.932151</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-1.331236</td>
+      <td>-1.305136</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-0.552372</td>
+      <td>-0.539187</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2428.95</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-1.331236</td>
+      <td>-1.305136</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-0.552372</td>
+      <td>-0.539187</td>
+      <td>...</td>
+      <td>0</td>
+      <td>0.349469</td>
+      <td>0.356270</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2202.20</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.552372</td>
+      <td>-0.539187</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.349469</td>
+      <td>0.356270</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-0.019466</td>
+      <td>-0.203082</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2838.35</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>350</th>
+      <td>-0.183437</td>
+      <td>-0.099229</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-0.306415</td>
+      <td>-0.361822</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-1.782156</td>
+      <td>-1.582407</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1419.00</td>
+    </tr>
+    <tr>
+      <th>351</th>
+      <td>-0.306415</td>
+      <td>-0.361822</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-1.782156</td>
+      <td>-1.582407</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-2.028113</td>
+      <td>-2.135099</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1637.20</td>
+    </tr>
+    <tr>
+      <th>352</th>
+      <td>-1.782156</td>
+      <td>-1.582407</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-2.028113</td>
+      <td>-2.135099</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-1.495207</td>
+      <td>-1.596838</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1353.25</td>
+    </tr>
+    <tr>
+      <th>353</th>
+      <td>-2.028113</td>
+      <td>-2.135099</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-1.495207</td>
+      <td>-1.596838</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-2.397048</td>
+      <td>-2.297293</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1337.80</td>
+    </tr>
+    <tr>
+      <th>354</th>
+      <td>-1.495207</td>
+      <td>-1.596838</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-2.397048</td>
+      <td>-2.297293</td>
+      <td>...</td>
+      <td>0</td>
+      <td>-2.315063</td>
+      <td>-2.335405</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2916.00</td>
+    </tr>
+  </tbody>
+</table>
+<p>355 rows &#215; 25 columns</p>
+</div>
+      
+        
+  
+    
+    
+  
+      
+      
+  
+
+      
+    </div>
+  </div>
+  
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[200]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Partition the data</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">seq_data</span><span class="p">[</span><span class="s1">&#39;total_sales&#39;</span><span class="p">]</span>
+<span class="n">predictors</span> <span class="o">=</span> <span class="n">seq_data</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;total_sales&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">predictors_train</span><span class="p">,</span> <span class="n">predictors_test</span><span class="p">,</span> <span class="n">target_train</span><span class="p">,</span> <span class="n">target_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">predictors</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">predictors_test</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">target_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(248, 24) (107, 24) (248,) (107,)
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[201]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the distribution of target variable for training data set</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">target_train</span><span class="p">)</span>
+<span class="n">snsplot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Histogram of total_sales in the training data set&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[201]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Text(0.5, 1.0, &#39;Histogram of total_sales in the training data set&#39;)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[202]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine the distribution of target variable for testing data set</span>
+<span class="n">snsplot</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">target_test</span><span class="p">)</span>
+<span class="n">snsplot</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Histogram of total_sales in the testing data set&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[202]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Text(0.5, 1.0, &#39;Histogram of total_sales in the testing data set&#39;)</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3>4. Neural network prediction and evaluation<a rel="noopener" class="anchor-link" href="#4.-Neural-network-prediction-and-evaluation">&#182;</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[203]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Build a neural network on training data</span>
+<span class="k">class</span> <span class="nc">extract_tensor</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">tensor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">tensor</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
+
+
+<span class="k">class</span> <span class="nc">neural_network</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size1</span><span class="p">,</span> <span class="n">hidden_size2</span><span class="p">,</span> <span class="n">out_size</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">in_size</span><span class="p">,</span> <span class="n">hidden_size1</span><span class="p">,</span> <span class="n">num_layers</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+          <span class="n">extract_tensor</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size1</span><span class="p">,</span> <span class="n">hidden_size2</span><span class="p">),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+          <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size2</span><span class="p">,</span> <span class="n">out_size</span><span class="p">))</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+      <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+      <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[204]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Create tensor from pandas dataframe</span>
+<span class="n">predictors_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_train</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">248</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="c1"># reshape the tensor to 248 sequences; each sequence has length = 3 and input size = 8 (will be used to predict the next day&#39;s sale based on the sales and orders of the past three days)</span>
+<span class="n">target_train_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target_train</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="n">predictors_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">predictors_test</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">107</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+<span class="n">target_test_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target_test</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Create tensor dataset (set target variable to float type)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_train_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_train_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">predictors_test_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">target_test_tensor</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+
+<span class="c1"># Define training and testing data loader, and set batch size to 16</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[205]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define training loop function</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">):</span>
+        <span class="c1"># Training Phase </span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">loss_train</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="n">loss_train</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">n_epochs</span><span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">{}</span><span class="s1">, Training loss </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">loss_train</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[206]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Model training</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">neural_network</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">,</span> <span class="n">train_loader</span> <span class="o">=</span> <span class="n">train_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 0, Training loss 5341072.84375
+Epoch 50, Training loss 362852.4072265625
+Epoch 100, Training loss 148971.638671875
+Epoch 150, Training loss 147556.25805664062
+Epoch 199, Training loss 104499.55517578125
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[207]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define testing function</span>
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+ 
+  <span class="c1"># testing phase</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+  <span class="n">predict_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">predict_test</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">label_train</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="n">label_test</span> <span class="o">=</span> <span class="p">[]</span>
+
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">predict_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">label_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+
+      <span class="k">for</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+          <span class="n">predict_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+          <span class="n">label_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+  
+  <span class="n">MAE_train</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)))</span>
+  <span class="n">RMSE_train</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_train</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_train</span><span class="p">)),</span> <span class="n">squared</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+  <span class="n">MAE_test</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)))</span>
+  <span class="n">RMSE_test</span> <span class="o">=</span> <span class="n">mean_squared_error</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">label_test</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="n">predict_test</span><span class="p">)),</span> <span class="n">squared</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training MAE and RMSE:&quot;</span><span class="p">,</span> <span class="n">MAE_train</span><span class="p">,</span> <span class="n">RMSE_train</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing MAE and RMSE:&quot;</span><span class="p">,</span> <span class="n">MAE_test</span><span class="p">,</span> <span class="n">RMSE_test</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[208]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Examine evaluation results</span>
+<span class="n">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Training MAE and RMSE: 229.50958055065524 319.5616487642847
+
+testing MAE and RMSE: 257.88651910229265 409.00735105155513
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[210]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">html</span> <span class="s2">&quot;/content/drive/MyDrive/DL_lab/Lab10_Learning_from_Squential_Data.ipynb&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[NbConvertApp] Converting notebook /content/drive/MyDrive/DL_lab/Lab10_Learning_from_Squential_Data.ipynb to html
+[NbConvertApp] Writing 389597 bytes to /content/drive/MyDrive/DL_lab/Lab10_Learning_from_Squential_Data.html
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+
+ 
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.3,
+							'renderLatex': false
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>

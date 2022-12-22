@@ -1,0 +1,1047 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+    
+    
+
+  <div class="border-box-sizing">
+    <div class="container">
+
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1>Lab 5: Using a Neural Network to Fit the Data<a rel="noopener" class="anchor-link" href="#Lab-5:-Using-a-Neural-Network-to-Fit-the-Data">&#182;</a></h1><hr/>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Parameter estimation<a rel="noopener" class="anchor-link" href="#Parameter-estimation">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Import libraries</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># The t_c values are temperatures in Celsius</span>
+<span class="c1"># The t_u values are read from our new thermometer with unknown units</span>
+
+<span class="n">t_c</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span>  <span class="mf">14.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">28.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">,</span>  <span class="mf">8.0</span><span class="p">,</span>  <span class="mf">3.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>  <span class="mf">6.0</span><span class="p">,</span> <span class="mf">13.0</span><span class="p">,</span> <span class="mf">21.0</span><span class="p">]</span>
+<span class="n">t_u</span> <span class="o">=</span> <span class="p">[</span><span class="mf">32.9</span><span class="p">,</span> <span class="mf">57.2</span><span class="p">,</span> <span class="mf">59.0</span><span class="p">,</span> <span class="mf">82.4</span><span class="p">,</span> <span class="mf">51.8</span><span class="p">,</span> <span class="mf">46.4</span><span class="p">,</span> <span class="mf">37.4</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">42.8</span><span class="p">,</span> <span class="mf">55.4</span><span class="p">,</span> <span class="mf">69.8</span><span class="p">]</span>
+<span class="n">t_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">t_c</span><span class="p">)</span>
+<span class="n">t_u</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">t_u</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Plot data</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span> <span class="c1"># dpi: resolution of the figure</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Measurement&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Temperature (&#176;Celsius)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;matplotlib.lines.Line2D at 0x7f27e62c1cd0&gt;]</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define the model as a Python function</span>
+<span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">w</span> <span class="o">*</span> <span class="n">t_u</span> <span class="o">+</span> <span class="n">b</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define the loss function</span>
+<span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">):</span>
+  <span class="n">squared_diffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_p</span> <span class="o">-</span> <span class="n">t_c</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+  <span class="k">return</span> <span class="n">squared_diffs</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Initialize the parameters and invoke the model</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>
+<span class="n">t_p</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([32.9000, 57.2000, 59.0000, 82.4000, 51.8000, 46.4000, 37.4000, 24.8000,
+        42.8000, 55.4000, 69.8000])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Check the value of the loss</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">)</span>
+<span class="n">loss</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor(1681.5272)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">dloss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">):</span>
+    <span class="n">dsq_diffs</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">t_p</span> <span class="o">-</span> <span class="n">t_c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dsq_diffs</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">dmodel_dw</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">t_u</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="k">def</span> <span class="nf">dmodel_db</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define the gradient function </span>
+<span class="k">def</span> <span class="nf">grad_fn</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">t_p</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">dloss_dtp</span> <span class="o">=</span> <span class="n">dloss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">)</span>
+    <span class="n">dloss_dw</span> <span class="o">=</span> <span class="n">dloss_dtp</span> <span class="o">*</span> <span class="n">dmodel_dw</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">dloss_db</span> <span class="o">=</span> <span class="n">dloss_dtp</span> <span class="o">*</span> <span class="n">dmodel_db</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">dloss_dw</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">dloss_db</span><span class="o">.</span><span class="n">mean</span><span class="p">()])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># The complete training loop</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">print_params</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">params</span>
+
+        <span class="n">t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># Forward pass</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="n">grad_fn</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="n">t_p</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># Backward pass</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">params</span> <span class="o">-</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad</span>
+
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">4000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">100000</span><span class="p">}:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">%d</span><span class="s1">, Loss </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="p">)))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Params:&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Grad:  &#39;</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">101</span><span class="p">}:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;...&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">params</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># The model diverges instead of converging to a minimum with large learning rate</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span><span class="n">t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 1, Loss 187.386368
+    Params: tensor([13.4659,  0.2100])
+    Grad:   tensor([-1346.5909,   -21.0000])
+Epoch 2, Loss 497449.718750
+    Params: tensor([-738.3428,  -13.2925])
+    Grad:   tensor([75180.8672,  1350.2495])
+Epoch 3, Loss 1550619136.000000
+    Params: tensor([41237.3320,   738.8163])
+    Grad:   tensor([-4197567.5000,   -75210.8828])
+...
+Epoch 10, Loss 4435733517345685329666721257095168.000000
+    Params: tensor([-6.9746e+16, -1.2497e+15])
+    Grad:   tensor([7.0995e+18, 1.2721e+17])
+Epoch 11, Loss 13827561903253331560802272988415131648.000000
+    Params: tensor([3.8941e+18, 6.9777e+16])
+    Grad:   tensor([-3.9639e+20, -7.1026e+18])
+...
+Epoch 99, Loss nan
+    Params: tensor([nan, nan])
+    Grad:   tensor([nan, nan])
+Epoch 100, Loss nan
+    Params: tensor([nan, nan])
+    Grad:   tensor([nan, nan])
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([nan, nan])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Try a smaller learning rate</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span><span class="n">t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 1, Loss 187.386368
+    Params: tensor([0.1347, 0.0021])
+    Grad:   tensor([-1346.5909,   -21.0000])
+Epoch 2, Loss 57.551537
+    Params: tensor([0.1928, 0.0028])
+    Grad:   tensor([-581.3164,   -7.2875])
+Epoch 3, Loss 33.357315
+    Params: tensor([0.2179, 0.0030])
+    Grad:   tensor([-250.9694,   -1.3682])
+...
+Epoch 10, Loss 27.809898
+    Params: tensor([0.2369, 0.0011])
+    Grad:   tensor([-0.7568,  3.1148])
+Epoch 11, Loss 27.808882
+    Params: tensor([0.2370, 0.0008])
+    Grad:   tensor([-0.3585,  3.1219])
+...
+Epoch 99, Loss 27.722918
+    Params: tensor([ 0.2375, -0.0267])
+    Grad:   tensor([-0.0560,  3.1225])
+Epoch 100, Loss 27.721943
+    Params: tensor([ 0.2375, -0.0270])
+    Grad:   tensor([-0.0559,  3.1224])
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([ 0.2375, -0.0270])</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Training the model 100000 epochs</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span><span class="n">t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 1, Loss 187.386368
+    Params: tensor([0.1347, 0.0021])
+    Grad:   tensor([-1346.5909,   -21.0000])
+Epoch 2, Loss 57.551537
+    Params: tensor([0.1928, 0.0028])
+    Grad:   tensor([-581.3164,   -7.2875])
+Epoch 3, Loss 33.357315
+    Params: tensor([0.2179, 0.0030])
+    Grad:   tensor([-250.9694,   -1.3682])
+...
+Epoch 10, Loss 27.809898
+    Params: tensor([0.2369, 0.0011])
+    Grad:   tensor([-0.7568,  3.1148])
+Epoch 11, Loss 27.808882
+    Params: tensor([0.2370, 0.0008])
+    Grad:   tensor([-0.3585,  3.1219])
+...
+Epoch 99, Loss 27.722918
+    Params: tensor([ 0.2375, -0.0267])
+    Grad:   tensor([-0.0560,  3.1225])
+Epoch 100, Loss 27.721943
+    Params: tensor([ 0.2375, -0.0270])
+    Grad:   tensor([-0.0559,  3.1224])
+...
+Epoch 4000, Loss 24.167810
+    Params: tensor([ 0.2586, -1.2039])
+    Grad:   tensor([-0.0524,  2.9154])
+Epoch 5000, Loss 23.332361
+    Params: tensor([ 0.2638, -1.4929])
+    Grad:   tensor([-0.0514,  2.8646])
+Epoch 10000, Loss 19.568876
+    Params: tensor([ 0.2883, -2.8640])
+    Grad:   tensor([-0.0469,  2.6234])
+Epoch 100000, Loss 0.825063
+    Params: tensor([  0.5007, -14.7155])
+    Grad:   tensor([-0.0096,  0.5387])
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Visualizing</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span> <span class="c1">#argument unpacking here: *params means to pass the elements of params as individual arguments. equivalent to model(t_un, params[0], params[1]).</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Temperature (&#176;Fahrenheit)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Temperature (&#176;Celsius)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">t_p</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[19]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&lt;matplotlib.lines.Line2D at 0x7f27de224190&gt;]</pre>
+</div>
+
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea">
+<img src="javascript://"/>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>PyTorch optimizer<a rel="noopener" class="anchor-link" href="#PyTorch-optimizer">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="nb">dir</span><span class="p">(</span><span class="n">optim</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;ASGD&#39;,
+ &#39;Adadelta&#39;,
+ &#39;Adagrad&#39;,
+ &#39;Adam&#39;,
+ &#39;AdamW&#39;,
+ &#39;Adamax&#39;,
+ &#39;LBFGS&#39;,
+ &#39;NAdam&#39;,
+ &#39;Optimizer&#39;,
+ &#39;RAdam&#39;,
+ &#39;RMSprop&#39;,
+ &#39;Rprop&#39;,
+ &#39;SGD&#39;,
+ &#39;SparseAdam&#39;,
+ &#39;__builtins__&#39;,
+ &#39;__cached__&#39;,
+ &#39;__doc__&#39;,
+ &#39;__file__&#39;,
+ &#39;__loader__&#39;,
+ &#39;__name__&#39;,
+ &#39;__package__&#39;,
+ &#39;__path__&#39;,
+ &#39;__spec__&#39;,
+ &#39;_functional&#39;,
+ &#39;_multi_tensor&#39;,
+ &#39;lr_scheduler&#39;,
+ &#39;swa_utils&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="n">t_c</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span>  <span class="mf">14.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">,</span> <span class="mf">28.0</span><span class="p">,</span> <span class="mf">11.0</span><span class="p">,</span>  <span class="mf">8.0</span><span class="p">,</span>  <span class="mf">3.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">,</span>  <span class="mf">6.0</span><span class="p">,</span> <span class="mf">13.0</span><span class="p">,</span> <span class="mf">21.0</span><span class="p">]</span>
+<span class="n">t_u</span> <span class="o">=</span> <span class="p">[</span><span class="mf">32.9</span><span class="p">,</span> <span class="mf">57.2</span><span class="p">,</span> <span class="mf">59.0</span><span class="p">,</span> <span class="mf">82.4</span><span class="p">,</span> <span class="mf">51.8</span><span class="p">,</span> <span class="mf">46.4</span><span class="p">,</span> <span class="mf">37.4</span><span class="p">,</span> <span class="mf">24.8</span><span class="p">,</span> <span class="mf">42.8</span><span class="p">,</span> <span class="mf">55.4</span><span class="p">,</span> <span class="mf">69.8</span><span class="p">]</span>
+<span class="n">t_c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">t_c</span><span class="p">)</span>
+<span class="n">t_u</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">t_u</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define model</span>
+<span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">w</span> <span class="o">*</span> <span class="n">t_u</span> <span class="o">+</span> <span class="n">b</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define loss</span>
+<span class="k">def</span> <span class="nf">loss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">):</span>
+  <span class="n">squared_diffs</span> <span class="o">=</span> <span class="p">(</span><span class="n">t_p</span> <span class="o">-</span> <span class="n">t_c</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+  <span class="k">return</span> <span class="n">squared_diffs</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define training loop</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span><span class="p">):</span>
+  <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">t_u</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">t_p</span><span class="p">,</span> <span class="n">t_c</span><span class="p">)</span>
+
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">5000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Epoch </span><span class="si">%d</span><span class="s1">, Loss </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">loss</span><span class="p">)))</span>
+
+  <span class="k">return</span> <span class="n">params</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[26]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define a SGD optimizer</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.0001</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">([</span><span class="n">params</span><span class="p">],</span> <span class="n">lr</span> <span class="o">=</span> <span class="n">learning_rate</span><span class="p">)</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">,</span> <span class="n">t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 5000, Loss 23.332361
+Epoch 10000, Loss 19.568876
+Epoch 15000, Loss 16.412432
+Epoch 20000, Loss 13.765119
+Epoch 25000, Loss 11.544819
+Epoch 30000, Loss 9.682666
+Epoch 35000, Loss 8.120876
+Epoch 40000, Loss 6.810985
+Epoch 45000, Loss 5.712368
+Epoch 50000, Loss 4.791006
+Epoch 55000, Loss 4.018200
+Epoch 60000, Loss 3.370096
+Epoch 65000, Loss 2.826465
+Epoch 70000, Loss 2.370594
+Epoch 75000, Loss 1.988215
+Epoch 80000, Loss 1.667524
+Epoch 85000, Loss 1.398525
+Epoch 90000, Loss 1.172966
+Epoch 95000, Loss 0.983774
+Epoch 100000, Loss 0.825063
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[26]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([  0.5007, -14.7155], requires_grad=True)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[27]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Using a Adam optimizer</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">params</span><span class="p">],</span> <span class="n">lr</span> <span class="o">=</span> <span class="n">learning_rate</span><span class="p">)</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">30000</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">,</span> <span class="n">t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">,</span> <span class="n">t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 5000, Loss 0.000488
+Epoch 10000, Loss 0.000000
+Epoch 15000, Loss 0.000000
+Epoch 20000, Loss 0.000000
+Epoch 25000, Loss 0.000000
+Epoch 30000, Loss 0.000000
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[27]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([  0.5556, -17.7778], requires_grad=True)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2>Training, testing, and overfitting<a rel="noopener" class="anchor-link" href="#Training,-testing,-and-overfitting">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[28]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Split the data into a training set and a testing set</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">n_samples</span> <span class="o">=</span> <span class="n">t_u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">n_test</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.2</span> <span class="o">*</span> <span class="n">n_samples</span><span class="p">)</span>
+
+<span class="n">shuffled_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
+
+<span class="n">train_indices</span> <span class="o">=</span> <span class="n">shuffled_indices</span><span class="p">[:</span><span class="o">-</span><span class="n">n_test</span><span class="p">]</span>
+<span class="n">test_indices</span> <span class="o">=</span> <span class="n">shuffled_indices</span><span class="p">[</span><span class="o">-</span><span class="n">n_test</span><span class="p">:]</span>
+
+<span class="n">train_indices</span><span class="p">,</span> <span class="n">test_indices</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[28]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(tensor([10,  0,  4,  3,  5,  8,  2,  1,  9]), tensor([7, 6]))</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[29]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="n">train_t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">[</span><span class="n">train_indices</span><span class="p">]</span>
+<span class="n">train_t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">[</span><span class="n">train_indices</span><span class="p">]</span>
+
+<span class="n">test_t_u</span> <span class="o">=</span> <span class="n">t_u</span><span class="p">[</span><span class="n">test_indices</span><span class="p">]</span>
+<span class="n">test_t_c</span> <span class="o">=</span> <span class="n">t_c</span><span class="p">[</span><span class="n">test_indices</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[30]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Define training loop</span>
+<span class="k">def</span> <span class="nf">training_loop</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">train_t_u</span><span class="p">,</span> <span class="n">test_t_u</span><span class="p">,</span> <span class="n">train_t_c</span><span class="p">,</span> <span class="n">test_t_c</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">train_t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">train_t_u</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">train_loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">train_t_p</span><span class="p">,</span> <span class="n">train_t_c</span><span class="p">)</span>
+                             
+        <span class="n">test_t_p</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">test_t_u</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">test_loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">test_t_p</span><span class="p">,</span> <span class="n">test_t_c</span><span class="p">)</span>
+        
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">train_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&lt;=</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">5000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">, Training loss </span><span class="si">{</span><span class="n">train_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,&quot;</span><span class="sa">f</span><span class="s2">&quot; Testing loss </span><span class="si">{</span><span class="n">test_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">params</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[31]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Model training and testing</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">],</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">([</span><span class="n">params</span><span class="p">],</span> <span class="n">lr</span> <span class="o">=</span> <span class="n">learning_rate</span><span class="p">)</span>
+<span class="n">training_loop</span><span class="p">(</span><span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">30000</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">params</span><span class="p">,</span> <span class="n">train_t_u</span> <span class="o">=</span> <span class="n">train_t_u</span><span class="p">,</span> <span class="n">train_t_c</span> <span class="o">=</span> <span class="n">train_t_c</span><span class="p">,</span> <span class="n">test_t_u</span> <span class="o">=</span> <span class="n">test_t_u</span><span class="p">,</span> <span class="n">test_t_c</span> <span class="o">=</span> <span class="n">test_t_c</span> <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Epoch 1, Training loss 226.2500, Testing loss 12.5000
+Epoch 2, Training loss 224.5845, Testing loss 12.4891
+Epoch 3, Training loss 222.9259, Testing loss 12.4803
+Epoch 5000, Training loss 13.3756, Testing loss 53.1700
+Epoch 10000, Training loss 6.4599, Testing loss 25.6979
+Epoch 15000, Training loss 2.1257, Testing loss 8.4567
+Epoch 20000, Training loss 0.2359, Testing loss 0.9383
+Epoch 25000, Training loss 0.0000, Testing loss 0.0000
+Epoch 30000, Training loss 0.0000, Testing loss 0.0000
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[31]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>tensor([  0.5556, -17.7778], requires_grad=True)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="c1"># Mounting Google Drive</span>
+<span class="kn">from</span> <span class="nn">google.colab</span> <span class="kn">import</span> <span class="n">drive</span>
+<span class="n">drive</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s1">&#39;/content/drive&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&#160;[&#160;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class="highlight hl-python"><pre><span></span><span class="err">!</span><span class="n">jupyter</span> <span class="n">nbconvert</span> <span class="o">--</span><span class="n">to</span> <span class="n">html</span> <span class="s2">&quot;/content/drive/MyDrive/DL_lab/Lab_5_Using_a_Neural_Network_to_Fit_the_Data.ipynb&quot;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+
+ 
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.3,
+							'renderLatex': false
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.22.12-222/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>
